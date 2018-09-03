@@ -122,7 +122,7 @@ public class TVUser{
 - 분리하여 작성한 설정 파일들을 하나로 통합할 때 사용한다.
 - 여러 스프링 설정 파일을 포함함으로써 한 파일에 작성하는 것과 같은 효과를 낼 수 있다.
 ```xml
-<import resource="context-datasource.xml>"`
+<import resource="context-datasource.xml">
 ```
 ### 2.2.3 < bean > 엘리먼트
 - 스프링 설정 파일에 클래스를 등록할 때 사용된다.
