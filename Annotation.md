@@ -226,7 +226,7 @@ public void volumeDown(){
   }
   ```
 
-  ```xml
+```xml
 <beans>
   <context:component-scan base-package="polymorphism"/>
   <bean class="polymorphism.AppleSpeaker"/>
