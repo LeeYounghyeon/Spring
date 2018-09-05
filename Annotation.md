@@ -1,6 +1,6 @@
 ## 4.1 어노테이션 설정 기초
 ### 4.1.1 Context 네임스페이스 추가
-- 어노테시션 설정을 추가하려면 스프링 설정 파일의 루트 엘리먼트인 `<bean>`에 Context관련 네임스페이스와 스키마 문서의 위치를 등록해야 한다.
+- 어노테이션 설정을 추가하려면 스프링 설정 파일의 루트 엘리먼트인 `<bean>`에 Context관련 네임스페이스와 스키마 문서의 위치를 등록해야 한다.
 - [Namespace]-context 항목 체크
 
 ### 4.1.2 컴포넌트 스캔 설정
@@ -232,7 +232,9 @@ public void volumeDown(){
   <bean class="polymorphism.AppleSpeaker"/>
 </beans>
 ```
+
 -  LgTV에 설정한 @Autowired에 의해서 SonySpeaker 객체가 의존성 주입된다. 이후 AppleSpeaker로 교체할 때는 SonySpeaker를 AppleSpeaker로 수정하면 된다.
+
 
 ## 4.3 추가 어노테이션
 - @Service
