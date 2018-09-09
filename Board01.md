@@ -225,3 +225,5 @@ public class TestController {
 4. Dispatcher는 받은 View이름을 View Resolver에게 보내 맞는 View를 받는다.
 5. Dispatcher는 View에게 Model을 보내고 View는 Model을 바인딩 한 후 html형태로 변환된 결과를 다시 보낸다.
 6. Dispatcher는 Client에게 요청에 대한 결과를 보여준다.
+
+기본 준비 끝!
