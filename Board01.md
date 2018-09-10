@@ -1,7 +1,8 @@
 ## 실습 01
 ### 스프링 프로젝트 만들기
 - [File] - [New] - [project]
-- [maven]에서 Create from archetype를 체크 한 뒤 mave-webapp선택
+- [maven]에서 Create from archetype를 체크 한 뒤 maven-archetype-webapp선택
+- 오른쪽 아래 enable-auto 선택
 
 ### 디펜던시 추가
 - pom.xml에 필요한 디펜던시를 추가해준다.
