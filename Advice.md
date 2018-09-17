@@ -20,6 +20,20 @@ public class BeforeAdvice{
     }
 }
 ```
+applicationContext.xml
+```xml
+<!-- Before -->
+<bean id="before" class="com.springbook.biz.common.BeforeAdvice"/>
+
+<aop:config>
+  <aop:pointcut id="allpointcut"
+    expression="execution(* com.springbook.biz..*Impl.*(..))"/>
+
+    <aop:aspect ref="before">
+      <aop:before pointcut-ref="allPointcut" method="beforeLog"/>
+    </aop:aspect>
+</aop:config>
+```
 
 ### 6.1.2 After Returning 어드바이스
 - 포인트컷으로 지정된 메소드가 정상적으로 실행되고 나서, 메소드 수행 결과로 생성된 데이터를 리턴하는 시점에 동작한다.
@@ -35,6 +49,20 @@ public class AfterReturningAdvice{
     System.out.println("[사후 처리] 비즈니스 로직 수행 후 동작");
     }
 }
+```
+applicationContext.xml
+```xml
+<!-- After Returning -->
+<bean id="afterReturning" class="com.springbook.biz.common.AfterReturningAdvice"/>
+
+<aop:config>
+  <aop:pointcut id="getpointcut"
+    expression="execution(* com.springbook.biz..*Impl.*(..))"/>
+
+    <aop:aspect ref="afterReturning">
+      <aop:after-returning pointcut-ref="getPointcut"  method="afterLog"/>
+    </aop:aspect>
+</aop:config>
 ```
 
 ### 6.1.3 After Throwing 어드바이스
@@ -64,7 +92,21 @@ public class BoardServiceImpl impliments BoardService {
     boardDAO.insertBoard(vo);
   }
 }
+```
 
+applicationContext.xml
+```xml
+<!-- After  Throwing -->
+<bean id="afterThrowing" class="com.springbook.biz.common.AfterThrowingAdvice"/>
+
+<aop:config>
+  <aop:pointcut id="allpointcut"
+    expression="execution(* com.springbook.biz..*Impl.*(..))"/>
+
+    <aop:aspect ref="afterThrowing">
+      <aop:after-throwing pointcut-ref="allPointcut"  method="exceptionLog"/>
+    </aop:aspect>
+</aop:config>
 ```
 
 ### 6.1.4 After 어드바이스
@@ -79,6 +121,25 @@ public class AfterAdvice{
     System.out.println("[사후 처리] 비즈니스 로직 수행 후 무조건 동작");
     }
 }
+```
+applicationContext.xml
+```xml
+<!-- After -->
+<bean id="afterThrowing" class="com.springbook.biz.common.AfterThrowingAdvice"/>
+<bean id="after" class="com.springbook.biz.common.AfterAdvice"/>
+
+<aop:config>
+  <aop:pointcut id="allpointcut"
+    expression="execution(* com.springbook.biz..*Impl.*(..))"/>
+
+    <aop:aspect ref="afterThrowing">
+      <aop:after-throwing pointcut-ref="allPointcut"  method="exceptionLog"/>
+    </aop:aspect>
+
+    <aop:aspect ref="after">
+      <aop:after pointcut-ref = "allPointcut" method="finallyLog"/>
+    </aop:aspect>
+</aop:config>
 ```
 
 ### 6.1.5 Around 어드바이스
@@ -100,67 +161,8 @@ public class AroundAdvice{
     }
 }
 ```
-
-
-
-
-
-
+applicationContext.xml
 ```xml
-
-<!-- Before -->
-<bean id="before" class="com.springbook.biz.common.BeforeAdvice"/>
-
-<aop:config>
-  <aop:pointcut id="allpointcut"
-    expression="execution(* com.springbook.biz..*Impl.*(..))"/>
-
-    <aop:aspect ref="before">
-      <aop:before pointcut-ref="allPointcut" method="beforeLog"/>
-    </aop:aspect>
-</aop:config>
-
-<!-- After Returning -->
-<bean id="afterReturning" class="com.springbook.biz.common.AfterReturningAdvice"/>
-
-<aop:config>
-  <aop:pointcut id="getpointcut"
-    expression="execution(* com.springbook.biz..*Impl.*(..))"/>
-
-    <aop:aspect ref="afterReturning">
-      <aop:after-returning pointcut-ref="getPointcut"  method="afterLog"/>
-    </aop:aspect>
-</aop:config>
-
-<!-- After  Throwing -->
-<bean id="afterThrowing" class="com.springbook.biz.common.AfterThrowingAdvice"/>
-
-<aop:config>
-  <aop:pointcut id="allpointcut"
-    expression="execution(* com.springbook.biz..*Impl.*(..))"/>
-
-    <aop:aspect ref="afterThrowing">
-      <aop:after-throwing pointcut-ref="allPointcut"  method="exceptionLog"/>
-    </aop:aspect>
-</aop:config>
-
-<!-- After -->
-<bean id="afterThrowing" class="com.springbook.biz.common.AfterThrowingAdvice"/>
-<bean id="after" class="com.springbook.biz.common.AfterAdvice"/>
-
-<aop:config>
-  <aop:pointcut id="allpointcut"
-    expression="execution(* com.springbook.biz..*Impl.*(..))"/>
-
-    <aop:aspect ref="afterThrowing">
-      <aop:after-throwing pointcut-ref="allPointcut"  method="exceptionLog"/>
-    </aop:aspect>
-
-    <aop:aspect ref="after">
-      <aop:after pointcut-ref = "allPointcut" method="finallyLog"/>
-    </aop:aspect>
-</aop:config>
-
 <!-- Around -->
 <bean id="afterReturning" class="com.springbook.biz.common.AroundAdvice"/>
 
@@ -172,4 +174,163 @@ public class AroundAdvice{
       <aop:around pointcut-ref="allPointcut"  method="aroundLog"/>
     </aop:aspect>
 </aop:config>
+```
+
+## 6.2 JoinPoint와 바인드 변수
+- 횡단 관심에 해당하는 어드바이스 메소드를 의미 있게 구현하려면 클라이언트가 호출한 비즈니스 메소드의 정보가 필요하다.
+- 다양한 정보들을 JoinPoint인터페이스를 제공한다.
+
+### 6.2.1 JoinPoint 메소드
+- `Signature getSignature()` : 클라이언트가 호출한 메소드의 시그니처(리턴타입,이름,매개변수) 정보가 저장된 Signature 객체 리턴
+- `Object getTarget()` : 클라이언트가 호출한 비즈니스 메소드를 포함하는 비즈니스 객체 리턴
+- `Object[] getArgs()` : 클라이언트가 메소드 호출할 때 넘겨준 인자 목록을 Object 배열로 리턴
+- Around 어드바이스에서는 ProceedingJoinPoint를 매개변수로 사용해야한다.
+- Signature 제공 메소드
+  - `String getName()` : 클라이언트가 호출한 메소드 이름 리턴
+  - `String toLongString()` : 클라이언트가 호출한 메소드의 리턴 타입, 이름, 매개변수를 패키지 경로까지 포함하여 리턴
+  - `String toShortString()` : 클라이언트가 호출한 메소드 시그니쳐를 축약한 문자열로 리턴
+
+
+
+```java
+package com.springbook.biz.common;
+
+import org.aspectj.lang.JoinPoint;
+
+public class LogAdvice{
+  public void printLog(JoinPoint jp){
+
+    System.out.println("[공통 로그] 비즈니스 로직 수행 전 동작");
+  }
+}
+```
+
+### 6.2.2 Before 어드바이스
+- `getSignature()`메소드로 클라이언트가 호출한 메소드 이름을 출력한다.
+- `getArgs()`메소드를 통해 인자 목록을 Object배열로 얻어낼 수 있어,메소드에 어떤 호출값들을 사용했는지 알 수있다.
+
+```java
+package com.springbook.biz.common;
+import org.aspectj.lang.JoinPoint;
+
+public class BeforeAdvice{
+  public void beforeLog(JoinPoint jp){
+    String method = jp.getSignature().getName();
+    Object[] args = jp.getArgs();
+    System.out.println("[사진 처리]" + method + "()메소드 ARGS 정보: " + args[0].toString());
+    }
+}
+```
+
+### 6.2.3 After Returning 어드바이스
+- `afterLog()`메소드는 클라이언트가 호출한 비즈니스 메소드 정보를 알아내기 위해 JoinPoint객체를 첫 번째 매째 매개변수로 선언되어 있는데, 이를 '바인드 변수'라고 한다.
+- 바인드 변수가 추가됐다면 반드시 바인드 변수에 대한 매핑 설정을 스프링 설정 파일에 `aop:after-returning`앨리먼트의 returning속성을 사용해서 추가해야한다.
+
+```java
+package com.springbook.biz.common;
+import org.aspectj.lang.JoinPoint;
+import com.springbook.biz.user.UserVO;
+
+public class AfterReturningAdvice{
+  public void AfterLog(JoinPoint jp,Object returnObj){
+    String method = jp.getSignature().getName();
+    if(returnObj instanceof UserVO){
+      UserVO user = (UserVO) returnObj;
+      if(user.getRole().equals("Admin")){
+        System.out.println(user.getName()+"로그인(Admin)");
+      }
+    }
+    System.out.println("[사후 처리]" + method+ " () 메소드 리턴값:" + returnObj.toString());
+    }
+}
+```
+applicationContext.xml
+```xml
+<!-- After Returning -->
+<bean id="afterReturning" class="com.springbook.biz.common.AfterReturningAdvice"/>
+
+<aop:config>
+  <aop:pointcut id="getpointcut"
+    expression="execution(* com.springbook.biz..*Impl.*(..))"/>
+
+    <aop:aspect ref="afterReturning">
+      <aop:after-returning pointcut-ref="getPointcut"  method="afterLog" returning="returnObj"/>
+    </aop:aspect>
+</aop:config>
+```
+
+### 6.2.4  After Throwing 어드바이스
+- `<aop:after-throwing>`앨리먼트의 throwing속성을 사용한다.
+- 비즈니스 메소드에서 발생한 예외 객체를 exceptObj라는 바인드 변수에 바인드 하라는 설정
+- 예외 객체의 종류에 따라 다양하게 예외 처리를 할 수도 있다.
+
+
+```java
+package com.springbook.biz.common;
+
+import org.aspectj.lang.JoinPoint;
+
+public class AfterThrowingAdvice{
+  public void exceptionLog(JointPoint jp, Exception exceptObj){
+    String method = jp.getSignature().getName();
+
+    System.out.println("[예외 처리]" + method " ()메소드 수행 중 발생된 예외 메세지 :" + exceptObj.getMassage());
+    }
+}
+```
+BoardServiceImpl.java
+```java
+@Service("boardService")
+public class BoardServiceImpl impliments BoardService {
+  @Autowired
+  private BoardDAO boardDAO;
+
+  public void insertBoard(BoardVO vo){
+    if(vo.getSeq() == 0){
+      thriw new IllegalArgumentException("0번 글은 등록할 수 없습니다.");
+    }
+    boardDAO.insertBoard(vo);
+  }
+}
+```
+
+applicationContext.xml
+```xml
+<!-- After  Throwing -->
+<bean id="afterThrowing" class="com.springbook.biz.common.AfterThrowingAdvice"/>
+
+<aop:config>
+  <aop:pointcut id="allpointcut"
+    expression="execution(* com.springbook.biz..*Impl.*(..))"/>
+
+    <aop:aspect ref="afterThrowing">
+      <aop:after-throwing pointcut-ref="allPointcut"  method="exceptionLog" throwing="exceptObj"/>
+    </aop:aspect>
+</aop:config>
+```
+
+
+### 6.2.5 Around 어드바이스
+- 다른 어드바이스와 다르게 반드시 ProceedingJoinPoint 객체를 매개변수로 받아야한다.
+
+```java
+package com.springbook.biz.common;
+
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.springframework.util.StopWatch;
+
+public class AroundAdvice{
+  public Object aroundLog(ProceedingJoinPoint pjp) throws Throwable{
+    String method = pjp.getSignature().getName();
+
+    StopWatch stopwatch = new StopWatch();
+    stopwatch.start();
+
+    Object obj = pjp.proceed();
+
+    stopwatch.stop();
+    System.out.println(method + "() 메소드 수행에 걸린 시간: " + StopWatch.getTotalTimeMillis()+ "(ms)초");
+    return obj;
+    }
+}
 ```
