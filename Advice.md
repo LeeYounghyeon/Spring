@@ -334,3 +334,367 @@ public class AroundAdvice{
     }
 }
 ```
+
+## 6.3 어노테이션 기반 AOP
+### 6.3.1 어노테이션 사용을 위한 스프링 설정
+- `aop:aspectj-autoproxy`만 선언하면 스프링 컨테이너는 AOP관련 어노테이션들을 인식하고 용도에 맞게 처리해준다.
+- 어드바이스 클래스에 AOP관련 어노테이션들을 설정한다.
+- 어드바이스 클래스는 반드시 스프링 설정 파일에 <bean>등록하거나 @Service어노테이션을 사용하여 컴포넌트가 검색될 수 있도록 해야한다.
+- Annotation설정
+```java
+@service
+public class LogAdvice{}
+```
+- XML 설정
+```xml
+<bean id="log" class="com.springbook.biz.common.LogAdvice"></bean>
+```
+
+
+applicationContext.xml
+```xml
+<context:component-scan base-package="com.springbook.biz"></context:component-scan>
+
+<aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+```
+
+### 6.3.2 포인트컷 설정
+- `<aop:config>`엘리먼트를 사용한다.
+- 어노테이션 설정으로 선언할 때는 `@Pointcut`를 사용한다.
+- 하나의 어드바이스 클래스 안에 참조 메소드를 이용해, 여러 개의 포인트컷을 선언할 수 있다.
+- 참조 메소드는 구현 로직이 없는 메소드이므로 단순히 포인트컷을 식별하는 이름으로만 사용된다.
+applicationContext.xml
+```xml
+<aop:config>
+  <aop:pointcut id="allPointcut" expression="execution(* com.springbook.biz..*Impl.*(..))"/>
+  <aop:pointcut id="getPointcut" expression="execution(* com.springbook.biz..*Impl.get*(..))"/>
+
+  <aop:aspect ref="log">
+    <aop:before pointcut-ref="allPointcut" method="printLog"/>
+  </aop:aspect>
+</aop:config>
+```
+
+LogAdvice.java
+```java
+import org.aspectj.lang.annotation.Pointcut;
+
+@service
+public class LogAdvice{
+  @Pointcut("execution(* com.springbook.biz..*Impl.*(..))")
+  public void allPointcut(){}
+
+  @Pointcut("executionexecution(* com.springbook.biz..*Impl.get*(..))")
+  public void getPointcut(){}
+}
+```
+
+### 6.3.3 어드바이스 설정
+- 어드바이스 메소드가 언제 동작할지 결정하여 관련된 어노테이션을 메소드 위에 설정하면 된다.
+- 어노테이션 뒤에 괄호를 추가하고 포인트컷 참조 메소드를 지정하면 된다.
+LogAdvice.java
+
+
+```java
+import org.aspectj.annotation.Before;
+import org.aspectj.annotation.Pointcut;
+
+@Service
+public class LogAdvice{
+  @Pointcut("execution(* com.springbook.biz.Impl.*(..))")
+  public void allPointcut(){}
+
+  @Before("allPointcut()")
+  public void printLog(){
+    System.out.println("[공통 로그] 비즈니스 로직 수행 전 동작");
+  }
+}
+```
+
+### 6.3.4 애스팩트 설정
+- `@Aspect`이용하여 설정한다.
+- 애스팩트 : 포인트컷+어드바이스
+- LogAdvice 클래스 위에 @Aspect가 설정되어있으므로 스프링 컨테이너는 LogAdvice 객체를 애스팩트 객체로 인식한다.
+
+
+
+LogAdvice.java
+
+```java
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
+
+@Service
+@Aspect //Aspect = Pointcut + Advice
+public class LogAdvice{
+  @Pointcut("execution(* com.springbook.biz..*Impl.*(..))")
+  public void allPointcut(){}
+
+@Before("allPointcut()")
+public void printLog(){
+  System.out.println("[공통 로그] 비즈니스 로직 수행 전 동작");
+ }
+}
+```
+## 6.4 어드바이스 동작 시점
+### 6.4.1 Before 어드바이스
+- 클래스 선언부에 `@Service` `@Aspect`를 추가하여 BeforeAdvice 클래스가 컴포넌트 스캔되어 애스팩트 객체로 인식되도록 했다.
+- allPointcut() 참조 메소드를 추가하여 포인트컷을 선언했다.
+- beforeLog() 메소드 위에 `@Before`를 추가하여 allPointcut()으로 지정한 메소드가 호출될 때, beforeLog() 메소드가 Before 형태로 동작하도록 설정했다.
+
+
+
+```java
+package com.springbook.biz.common;
+
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.stereotype.Service;
+
+@service
+@Aspect
+public class BeforeAdvice{
+  @Pointcut("execution(* com.springbook.biz..*Impl.*(..))")
+  public void allPointcut(){}
+
+  @Before("allPointcut()")
+  public void beforeLog(JoinPoint jp){
+    String method = jp.getSignature().getName();
+    Object[] args = jp.getArgs();
+
+    System.out.println("[사전 처리]"+method+"()메소드 ARGS정보: "+ args[0].toString());
+  }
+}
+```
+
+### 6.4.2 After Returning 어드바이스
+- 비즈니스 메소드가 리턴한 결과 데이터를 다른 용도로 처리할 때 사용
+- AfterReturningAd 클래스에 관련된 어노테이션을 추가한다.
+- afterLog() 메소드가 After Returning 형태로 동작하도록 메소드 위에 `@AfterReturning` 어노테이션을 추가한다.
+- After Returning 어드바이스가 비즈니스 메소드 수행 결과를 받아내기 위해 바인드 변수를 지정해야 한다. -> 포인트컷을 참조하고 있다.
+
+```java
+package com.springbook.biz.common;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.stereotype.Service;
+
+@service
+@Aspect
+public class AfterReturningAdvice{
+  @Pointcut("execution(* com.springbook.biz..*Impl.get*(..))")
+  public void getPointcut(){}
+
+  @AfterReturning(pointcut="getPointcut()", returning="returnObj")
+  public void AfterLog(JoinPoint jp,Object returnObj){
+    String method = jp.getSignature().getName();
+
+    if(returnObj instanceof UserVO){
+      UserVO user = (UserVO) returnObj;
+      if(user.getRole().equals("Admin")){
+        System.out.println(user.getName()+"로그인(Admin)");
+      }
+    }
+    System.out.println("[사후 처리]" + method+ " () 메소드 리턴값:" + returnObj.toString());
+    }
+}
+```
+
+applicationContext.xml
+```xml
+<aop:aspect ref="AfterReturning">
+  <aop:after-returning pointcut-ref="getPointcut" method="afterLog" returning="returnObj"/>
+</aop:aspect>
+```
+
+### 6.4.3 After Throwing 어드바이스
+- 메소드 실행 도중 예외가 발생했을 때 공통적인 예외처리 로직을 제공할 목적으로 사용한다.
+- AfterThrowingAdvice 클래스에 어노테이션을 추가한다.
+- 바인드 변수를 지정해야 하기 때문에 포인트컷 사용
+- throwing 속성을 이용하여 바인드 변수 지정
+
+```java
+package com.springbook.biz.common;
+
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.AfterThrowing;
+import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.stereotype.Service;
+
+@Service
+@Aspect
+public class AfterThrowingAdvice{
+  @Pointcut("exec(* com.springbo.biz..*Impl.*(..))")
+  public void allPointcut(){}
+
+  @AfterThrowing(pointcut="allPointcut()", throwing="exceptObj")
+  public void exceptionLog(JointPoint jp, Exception exceptObj){
+    String method = jp.getSignature().getName();
+    System.out.println("[예외 처리]" + method " ()메소드 수행 중 발생된 예외 메세지 :" + exceptObj.getMassage());
+    }
+}
+```
+
+applicationContext.xml
+```xml
+<!-- After  Throwing -->
+<bean id="afterThrowing" class="com.springbook.biz.common.AfterThrowingAdvice"/>
+
+<aop:config>
+  <aop:pointcut id="allpointcut"
+    expression="execution(* com.springbook.biz..*Impl.*(..))"/>
+
+    <aop:aspect ref="afterThrowing">
+      <aop:after-throwing pointcut-ref="allPointcut"  method="exceptioLog" throwing="exceptObj"/>
+    </aop:aspect>
+</aop:config>
+```
+
+### 6.4.4 After 어드바이스
+- 예외 발생 여부에 상관없이 무조건 수행
+- `@After` 어노테이션을 사용하여 설정
+
+```java
+package com.springbook.biz.common;
+
+
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.stereotype.Service;
+
+@Service
+@Aspect
+
+
+public class AfterAdvice{
+  @Pointcut("execution(* com.springbook.biz..*Impl.*(..))")
+  public void allPointcut(){}
+
+  @After("allPointcut()")
+  public void finallyLog(){
+    System.out.println("[사후 처리] 비즈니스 로직 수행 후 무조건 동작");
+    }
+}
+```
+
+### 6.4.5 Around 어드바이스 설정
+- 하나의 어드바이스로 사전, 사후 처리를 모두 해결하고자 할때 사용
+- `@Around` 어노테이션 추가
+- 바인드 변수가 없으므로 포인트컷 메소드만 참조
+- `ProceedJoinPoint`객체를 매개변수로 받는다.
+- 바인드 변수가 없으므로 포인트컷 메소드만 참조하면 된다.
+
+```java
+package com.springbook.biz.common;
+
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.stereotype.Service;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.springframework.util.StopWatch;
+
+@Service
+@Aspect
+
+public class AroundAdvice{
+  @Pointcut("execution(* com.springbook.biz..*Impl.*(..))")
+  public void allPointcut(){}
+
+  @Around("allPointcut()")
+  public Object aroundLog(ProceedingJoinPoint pjp) throws Throwable{
+    String method = pjp.getSignature().getName();
+
+    StopWatch stopwatch = new StopWatch();
+    stopwatch.start();
+
+    Object obj = pjp.proceed();
+
+    stopwatch.stop();
+    System.out.println(method + "() 메소드 수행에 걸린 시간: " + StopWatch.getTotalTimeMillis()+ "(ms)초");
+    return obj;
+    }
+}
+```
+
+### 6.4.6 외부 Pointcut 참조하기
+- 어노테이션 설정은 어드바이스 클래스 마다 포인트컷 설정이 포함되면서, 비슷하거나 같은 포인트컷이 반복 선언되는 문제 발생
+- 이를 해결하고자 외부에 독립된 클래스에 따로 설정한다.
+- 시스템에서 사용할 모든 포인트컷을 PointcutCommon 클래스에 등록한다.
+
+PointcutCommon.java
+```java
+package com.sprinbook.biz.common;
+
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
+
+@aspectpublic class PointcutCommon {
+  @Pointcut("execution(* com.springbook.biz..*Impl.*(..))")
+  public void allPointcut(){}
+
+  @Pointcut("execution(* com.springbook.biz..*Impl.get*(..))")
+  public void getPointcut(){}
+}
+```
+
+- 정의된 포인트컷을 참조하려면 클래스 이름과 참조 메소드 이름을 조합하여 지정해야 한다.
+
+
+```java
+package com.springbook.biz.common;
+
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.stereotype.Service;
+
+@service
+@Aspect
+public class BeforeAdvice{
+
+  @Before("PointcutCommon.allPointcut()")
+  public void beforeLog(JoinPoint jp){
+    String method = jp.getSignature().getName();
+    Object[] args = jp.getArgs();
+
+    System.out.println("[사전 처리]"+method+"()메소드 ARGS정보: "+ args[0].toString());
+  }
+}
+```
+
+
+```java
+package com.springbook.biz.common;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.stereotype.Service;
+
+@service
+@Aspect
+public class AfterReturningAdvice{
+
+  @AfterReturning(pointcut="PointcutCommon.getPointcut()", returning="returnObj")
+  public void AfterLog(JoinPoint jp,Object returnObj){
+    String method = jp.getSignature().getName();
+
+    if(returnObj instanceof UserVO){
+      UserVO user = (UserVO) returnObj;
+      if(user.getRole().equals("Admin")){
+        System.out.println(user.getName()+"로그인(Admin)");
+      }
+    }
+    System.out.println("[사후 처리]" + method+ " () 메소드 리턴값:" + returnObj.toString());
+    }
+}
+```
