@@ -138,3 +138,5 @@
     </select>
 </mapper>
 ```
+## HttpServletRequest
+- 하나의 요청에서 HttpServletRequest 객체가 소멸하기 까지 상태정보를 유지하고자 할 때, 한번의 요청으로 실행된 페이지끼리 정보를 공유하고자 할 때 사용되며, 디스패처에 의한 요청재지정을 하기 전 HttpServletRequest 객체의 setAttribute( ) 메소드로 데이터를 등록하고 요청 재지정으로 HttpServletRequest 객체가 전달된 페이지에서 getAttribute( ) 메소드로 추출할 수 있다.
