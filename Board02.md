@@ -241,7 +241,7 @@ public class TestController {
 
 - views 안에 board.jsp를 생성 해 결과가 잘 넘어오는지 확인하기
 - localhost:8080/board를 써주면 된다.
-
+- list 라는 이름으로 boardRepository에서 찾은 것을 전송함을 의미한다.
 
 ```xml
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
@@ -265,6 +265,7 @@ web.xml에 내용을 추가해줘서 해결!
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 ```
+- ${list}는 컨트롤러에서 model.addAttribute으로 보낸 이름 부분이 사용된다.
 
 ### 내용 정리
 - `pom.xml`의 dependency는 https://mvnrepository.com/ 여기서 검색해서 추가해준다.
