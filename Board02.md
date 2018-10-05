@@ -17,7 +17,7 @@ CREATE TABLE `Board` (
 ```
 - pom.xml에 DB와 JDBC, Mybatis를 사용하기 위한 내용을 추가해준다.
 
-- pom.xml에 추가할 내용
+### pom.xml에 추가할 내용
 
 ```xml
 <!-- Spring-jdbc -->
@@ -72,8 +72,10 @@ CREATE TABLE `Board` (
     </dependency>
 ```
 
-- dispatcher-servlet.xml에 내용 추가
 
+### dispatcher-servlet.xml에 내용 추가
+- 두번째 bean에서 name은 sqlSession 빈에서 사용할 이름이 dataSource이고, ref의 dataSource는 우리가 첫번째 bean 에서 정의한 빈을 참조하는 것을 의미한다.
+- mapperLocations는 앞으로 우리가 작성할 SQL 문이 위치할 장소이다.
 
 ```xml
 <bean id="datasource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
@@ -96,7 +98,8 @@ CREATE TABLE `Board` (
 ```
 
 - com.example - repository - BoardRepository.java 인터페이스 생성
-- BoardRepository.java
+
+BoardRepository.java
 
 
 ```java
