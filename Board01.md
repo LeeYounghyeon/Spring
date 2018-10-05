@@ -191,9 +191,10 @@ public class TestController {
 - webapp에서 WEB-INF안에 views 디렉토리 생성 후 안에 hello.jsp 를 생성해준다.
 - WEB-INF 안 web.xml 작성하기
 
-- web.xml
 
 
+
+web.xml
 ```xml
 <web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -225,6 +226,14 @@ public class TestController {
     <url-pattern>/</url-pattern>
   </servlet-mapping>
 </web-app>
+```
+
+- 아래 코드는 최초 서버가 시작될 때, 해당 위치에 있는 파일을 읽어들이는 것을 뜻한다.
+```xml
+<context-param>
+  <param-name>contextConfigLocation</param-name>
+  <param-value>classpath:spring/applicationContext.xml</param-value>
+</context-param>
 ```
 
 
